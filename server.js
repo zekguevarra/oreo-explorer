@@ -1,11 +1,21 @@
 import express from "express";
-import { readFile } from "node:fs/promises";
 import { config, publicConfig } from "./lib/config.js";
 import { getPosts, getStories } from "./lib/facebook.js";
 import { analyzeItem } from "./lib/analyzer.js";
+// Imported (not read from disk) so Vercel bundles it with the function. Edit it, then push to update.
+import manualTours from "./data/manual-tours.json" with { type: "json" };
 
 const app = express();
+// Locally Express serves public/. On Vercel this line is ignored and public/ is served from its CDN.
 app.use(express.static("public"));
+
+// Let Vercel's CDN keep API answers for a few minutes, so visitors get instant responses
+// and Facebook is called at most once per window instead of on every page view.
+const cdnSeconds = Math.max(60, Math.round(config.cacheMs / 1000));
+app.use("/api", (_req, res, next) => {
+  res.set("Cache-Control", `public, max-age=0, s-maxage=${cdnSeconds}, stale-while-revalidate=${cdnSeconds * 6}`);
+  next();
+});
 
 const wrap = (fn) => (req, res) =>
   fn(req, res).catch((err) => {
@@ -22,13 +32,11 @@ app.get("/api/stories", wrap(async (_req, res) => res.json(await getStories())))
 app.get(
   "/api/tours",
   wrap(async (_req, res) => {
-    const [posts, stories, manual] = await Promise.all([
+    const [posts, stories] = await Promise.all([
       getPosts(15).catch(() => ({ items: [] })),
       getStories().catch(() => ({ items: [] })),
-      readFile(new URL("./data/manual-tours.json", import.meta.url), "utf8")
-        .then((t) => JSON.parse(t).tours ?? [])
-        .catch(() => []),
     ]);
+    const manual = manualTours.tours ?? [];
 
     const found = [
       ...posts.items.flatMap((p) => analyzeItem(p, "post")),
@@ -60,8 +68,20 @@ app.get(
   }),
 );
 
-app.listen(config.port, () => {
-  const cfg = publicConfig();
-  console.log(`Oreo Explorer site running at http://localhost:${config.port}`);
-  console.log(`  Facebook: ${cfg.liveFacebook ? "live" : cfg.demoMode ? "sample data (no token set)" : "off"}`);
+// Errors from Facebook etc. are already answered by wrap(); this catches anything else so the
+// function never hangs in a broken state.
+app.use((err, _req, res, _next) => {
+  console.error(err);
+  res.status(500).json({ error: "Something went wrong" });
 });
+
+// Vercel runs the exported app as a function. Locally (npm start), listen on a port.
+if (!process.env.VERCEL) {
+  app.listen(config.port, () => {
+    const cfg = publicConfig();
+    console.log(`Oreo Explorer site running at http://localhost:${config.port}`);
+    console.log(`  Facebook: ${cfg.liveFacebook ? "live" : cfg.demoMode ? "sample data (no token set)" : "off"}`);
+  });
+}
+
+export default app;

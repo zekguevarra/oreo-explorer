@@ -65,20 +65,21 @@ in the site footer is required by those licences: keep it if you keep the photos
 whenever possible; real photos of your joiners beat stock every time. Keep the same file names (`<name>-800.webp` and
 `<name>-1600.webp`), or update `PLACE_PHOTOS` in `public/app.js` and the `<img>` tags in `public/index.html`.
 
-## Deploying (GitHub → Render → GoDaddy domain)
+## Deploying (GitHub → Vercel → GoDaddy domain)
 
-GitHub Pages can't host this site: it needs the Node server to keep the Facebook token secret. Use Render:
+GitHub Pages can't host this site: it needs the Node server to keep the Facebook token secret. Vercel runs it:
+`server.js` becomes one Vercel Function, and `public/` is served from Vercel's CDN.
 
-1. Push this folder to a new GitHub repository. `.env` is git-ignored, so the token never reaches GitHub.
-2. On [Render](https://render.com), sign in with GitHub, choose **New → Blueprint**, and pick the repo.
-   Render reads `render.yaml` and asks for `FB_PAGE_ID`, `FB_PAGE_ACCESS_TOKEN` and `CONTACT_PHONE`.
-3. Every `git push` to `main` redeploys the site.
-4. Custom domain: in Render, open the service, go to **Settings → Custom Domains**, and add `yourdomain.com`
-   and `www.yourdomain.com`. Then, in GoDaddy **DNS**, add the records Render lists:
-   - an A record for `@`
-   - a CNAME record for `www`
+1. Push this folder to GitHub. `.env` is git-ignored, so the token never reaches GitHub.
+2. On [vercel.com](https://vercel.com), sign in with GitHub, click **Add New → Project**, and import the repo.
+   Leave the settings as they are and click **Deploy**. You get a link like `oreo-explorer.vercel.app`.
+3. In the project, open **Settings → Environment Variables** and add the values from `.env.example`.
+   - Leave the Facebook values empty to keep the sample preview.
+   - Once his token is ready, add `FB_PAGE_ID`, `FB_PAGE_ACCESS_TOKEN` and `DEMO_MODE=false`, then redeploy.
+4. Every `git push` to `main` redeploys the site automatically.
+5. Custom domain: in Vercel, open **Settings → Domains**, add `yourdomain.com`, then copy the DNS records Vercel shows
+   into GoDaddy's **DNS** page. HTTPS is set up for you.
 
-   Render sets up HTTPS on its own.
+Vercel's free **Hobby** plan is for personal, non-commercial use. For the live business site, use the **Pro** plan.
 
-On the free plan the site sleeps after ~15 minutes without visitors (the first load then takes ~30–50 s). Set
-`plan: starter` in `render.yaml` to keep it always on.
+Local development still works with `npm start`.
