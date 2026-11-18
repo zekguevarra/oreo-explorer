@@ -120,6 +120,7 @@ p { margin: 0; }
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); text-decoration: none; font-size: 0.92rem;
   transition: background-color 200ms ease;
 }
+.next-trip[hidden] { display: none; }
 .next-trip .tag { background: var(--sea-bright); color: var(--ink); white-space: nowrap; }
 .next-trip > * { white-space: nowrap; }
 .next-trip strong { font-weight: 600; }
