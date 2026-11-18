@@ -6,8 +6,25 @@ import { analyzeItem } from "./lib/analyzer.js";
 import manualTours from "./data/manual-tours.json" with { type: "json" };
 
 const app = express();
-// Locally Express serves public/. On Vercel this line is ignored and public/ is served from its CDN.
-app.use(express.static("public"));
+
+if (!process.env.VERCEL) {
+  // Locally, Express serves public/ (including / → index.html).
+  app.use(express.static("public"));
+} else {
+  // On Vercel, public/ is served by the CDN, but only at exact paths like /index.html: a visit to "/"
+  // reaches this function instead. Fetch the page from the CDN and return it; the CDN then caches it.
+  app.get("/", async (req, res, next) => {
+    try {
+      const r = await fetch(`https://${req.headers.host}/index.html`);
+      if (!r.ok) throw new Error(`index.html → ${r.status}`);
+      res.set("Content-Type", "text/html; charset=utf-8");
+      res.set("Cache-Control", "public, max-age=0, s-maxage=300, stale-while-revalidate=86400");
+      res.send(await r.text());
+    } catch (err) {
+      next(err);
+    }
+  });
+}
 
 // Let Vercel's CDN keep API answers for a few minutes, so visitors get instant responses
 // and Facebook is called at most once per window instead of on every page view.
