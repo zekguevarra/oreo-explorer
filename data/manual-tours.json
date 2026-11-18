@@ -1,0 +1,4 @@
+{
+  "_help": "Trips listed in \"tours\" always show in the Upcoming trips table, even if no Facebook post mentions them. Past dates hide themselves. Copy this shape for each trip: { \"place\": \"Mt. Apo Day Hike\", \"dateStart\": \"2027-01-10\", \"dateEnd\": null, \"price\": \"₱3,500/pax\", \"slots\": \"10 slots\", \"type\": \"joiner\" }. type is joiner, exclusive or tour. Dates are YYYY-MM-DD.",
+  "tours": []
+}

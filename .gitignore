@@ -1,0 +1,13 @@
+﻿# Dependencies (Render reinstalls them)
+node_modules/
+
+# Secrets: the Facebook token lives here. Set these in Render's Environment tab instead.
+.env
+.env.*
+!.env.example
+
+# Local tooling and OS files
+.claude/
+.DS_Store
+Thumbs.db
+*.log

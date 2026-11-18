@@ -1,0 +1,39 @@
+# Render Blueprint: Render reads this when you choose New → Blueprint and pick this repo.
+# Secret values (sync: false) are asked for in the Render dashboard and never stored in git.
+services:
+  - type: web
+    name: oreo-explorer
+    runtime: node
+    plan: free # change to "starter" (~$7/mo) so the site never sleeps
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/config
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DEMO_MODE
+        value: "false"
+      - key: CACHE_MINUTES
+        value: "10"
+      - key: FB_GRAPH_VERSION
+        value: v23.0
+      - key: BUSINESS_NAME
+        value: Oreo Explorer
+      - key: FB_PAGE_URL
+        value: https://www.facebook.com/profile.php?id=61573751794406
+      - key: OWNER_NAME
+        value: Riojhon Palomo
+      - key: OWNER_FB_URL
+        value: https://www.facebook.com/riojhon.palomo
+      - key: MESSENGER_URL
+        value: https://m.me/61573751794406
+      - key: TIKTOK_URL
+        value: https://www.tiktok.com/@oreo.explorer
+      # Filled in on Render, kept out of git:
+      - key: FB_PAGE_ID
+        sync: false
+      - key: FB_PAGE_ACCESS_TOKEN
+        sync: false
+      - key: CONTACT_PHONE
+        sync: false
